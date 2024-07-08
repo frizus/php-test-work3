@@ -1,0 +1,91 @@
+services:
+  db:
+    image: postgres:16.3
+    volumes_from:
+      - disk
+    command: "postgres -c 'max_connections=500'"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    tty: true
+    stdin_open: true
+  php:
+    build:
+      context: "./php"
+      dockerfile: Dockerfile
+      args:
+        - SITE_EDITOR_GID=${SITE_EDITOR_GID}
+        - DOCKER_USER_UID_GID=${DOCKER_USER_UID_GID}
+        - DOCKER_WEB_USER=${DOCKER_WEB_USER}
+        - PHP_VERSION=${PHP_VERSION}
+        - PROJECT_ROOT=${PROJECT_ROOT}
+        - PUBLIC_ROOT=${PUBLIC_ROOT}
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      PHP_IDE_CONFIG: serverName=xdebug-server
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes_from:
+      - disk
+    command: /bin/bash -i -c "
+      php-fpm -F
+      "
+    ports:
+      - ":9000"
+    depends_on:
+      - db
+    restart: "no"
+    tty: true
+    stdin_open: true
+  nginx:
+    build:
+      context: "./nginx"
+      dockerfile: Dockerfile
+      args:
+        - SITE_EDITOR_GID=${SITE_EDITOR_GID}
+        - DOCKER_USER_UID_GID=${DOCKER_USER_UID_GID}
+        - DOCKER_WEB_USER=${DOCKER_WEB_USER}
+        - NGINX_VERSION=${NGINX_VERSION}
+        - NGINX_PORT=${NGINX_PORT}
+        - NGINX_HOST=${NGINX_HOST}
+        - PROJECT_ROOT=${PROJECT_ROOT}
+        - PUBLIC_ROOT=${PUBLIC_ROOT}
+    volumes_from:
+      - disk
+    command: [nginx, "-g", "daemon off;"]
+    ports:
+      - "8080:${NGINX_PORT}"
+    environment:
+      - NGINX_HOST=${NGINX_HOST}
+      - NGINX_PORT=${NGINX_PORT}
+    depends_on:
+      - php
+    tty: true
+    stdin_open: true
+  disk:
+    image: ubuntu:24.04
+    volumes:
+      - ./app:${PROJECT_ROOT}
+      - ./db-data:/var/lib/postgresql/data
+      - ./log/nginx:/var/log/nginx
+      - ./log/php:/var/log/php
+    # https://www.baeldung.com/ops/docker-compose-multiple-commands#1-using-the-ampamp-operator
+    command: /bin/bash -c "
+      chgrp ${SITE_EDITOR_GID} ${PROJECT_ROOT};
+      chmod 2775 ${PROJECT_ROOT};
+      chgrp ${SITE_EDITOR_GID} /var/log/nginx;
+      find /var/log/nginx -type d -exec chmod g+rwx -- {} +;
+      find /var/log/nginx -type f -exec chmod g+rw -- {} +;
+      find /var/log/nginx -type f -exec chgrp ${SITE_EDITOR_GID} -- {} +;
+      chgrp ${SITE_EDITOR_GID} /var/log/php;
+      find /var/log/php -type d -exec chmod g+rwx -- {} +;
+      find /var/log/php -type f -exec chmod g+rw -- {} +;
+      find /var/log/php -type f -exec chgrp ${SITE_EDITOR_GID} -- {} +;
+      "
+    restart: "no"
