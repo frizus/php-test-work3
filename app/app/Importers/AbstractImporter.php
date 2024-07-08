@@ -2,20 +2,11 @@
 
 namespace App\Importers;
 
+use App\Importers\Concerns\Stats;
+
 abstract class AbstractImporter
 {
+    use Stats;
+
     protected const array MAP = [];
-
-    protected array $stats = [];
-
-    protected function incrStat($name): void
-    {
-        $this->stats[$name] ??= 0;
-        $this->stats[$name]++;
-    }
-
-    public function getImportStats(): array
-    {
-        return $this->stats;
-    }
 }
