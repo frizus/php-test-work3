@@ -27,17 +27,22 @@ umask 002\n\
 RUN curl -L https://raw.githubusercontent.com/phpenv/phpenv-installer/master/bin/phpenv-installer \
     | bash
 
+# https://github.com/phpenv/phpenv/issues/66
 RUN echo -e "\n\
 export PHPENV_ROOT=\"/home/docker_user/.phpenv\"\n\
 if [ -d \"\${PHPENV_ROOT}\" ]; then\n\
 export PATH=\"\${PHPENV_ROOT}/bin:\${PATH}\"\n\
 eval \"\$(phpenv init -)\"\n\
 fi\n\
+\n\
+\n\
+export PHP_BUILD_CONFIGURE_OPTS=\"--with-pdo-pgsql\"\n\
 \n" | tee -a ~/.bashrc ~/.profile ~/.zshrc
 
 USER root
 
-RUN /home/docker_user/.phpenv/plugins/php-build/install-dependencies.sh
+RUN /home/docker_user/.phpenv/plugins/php-build/install-dependencies.sh && \
+    apt-get install -y libpq-dev
 
 USER docker_user
 
