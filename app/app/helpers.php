@@ -1,6 +1,16 @@
 <?php
 
 use App\Config;
+use App\Database\DatabaseManager;
+use App\Database\ILessQL;
+use LessQL\Database;
+
+function db(?string $connectionName = null): Database
+{
+    /** @var ILessQL $connection */
+    $connection = DatabaseManager::getInstance()->connection($connectionName);
+    return $connection->lessQL();
+}
 
 function config(string $key, mixed $default = null): mixed
 {
