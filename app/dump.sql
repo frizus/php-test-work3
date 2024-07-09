@@ -33,6 +33,7 @@ DROP TABLE IF EXISTS estate CASCADE;
 -- SQLINES LICENSE FOR EVALUATION USE ONLY
 CREATE TABLE estate (
   id bigint check (id > 0) NOT NULL GENERATED ALWAYS AS IDENTITY,
+  external_id varchar(255) NULL,
   address varchar(255) NOT NULL,
   price int NOT NULL,
   rooms int NOT NULL,
