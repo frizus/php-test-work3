@@ -11,8 +11,6 @@ class ImporterFactory
 
     public function __construct(?string $fileType = null)
     {
-        $fileType = mb_strtolower($fileType);
-
         switch ($fileType) {
             case 'xlsx':
             case 'xls':

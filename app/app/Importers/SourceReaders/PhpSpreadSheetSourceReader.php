@@ -4,9 +4,9 @@ namespace App\Importers\SourceReaders;
 
 class PhpSpreadSheetSourceReader extends AbstractSourceReader implements ISourceReader, ICanUseFilePathSourceReader
 {
-    public function __construct(protected ?string $filePath = null, ?string $format = null)
+    public function __construct(protected ?string $filePath = null, ?string $fileType = null)
     {
-        $this->setFileType($format);
+        $this->setFileType($fileType);
     }
 
     public function setFilePath(string $filePath): void

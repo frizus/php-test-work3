@@ -6,7 +6,7 @@ use App\Importers\SourceReaders\AbstractSourceReader;
 use App\Importers\SourceReaders\ICanUseBinarySourceReader;
 use App\Importers\SourceReaders\ICanUseFilePathSourceReader;
 use App\Importers\SourceReaders\ISourceReader;
-use App\Importers\SourceReaders\UnsupportedFeatureException;
+use App\UnsupportedFeatureException;
 
 class ImporterBuilder
 {
@@ -14,6 +14,7 @@ class ImporterBuilder
 
     public function __construct(?string $fileType = null)
     {
+        $fileType = mb_strtolower($fileType);
         $this->sourceReader = (new ImporterFactory($fileType))->getSourceReader();
         $this->setFileType($fileType);
     }
