@@ -3,6 +3,67 @@ namespace App\Helpers;
 
 class Arr
 {
+    public static function set(mixed &$array, string|array $key, mixed $value): void
+    {
+        if (!is_array($key)) {
+            $key = explode('.', $key);
+        }
+
+        if (empty($key)) {
+            $array = $value;
+        }
+
+        if (!is_array($array) && !is_object($array)) {
+            $array = [];
+        }
+
+        $lastKey = array_pop($key);
+        $element = &$array;
+        foreach ($key as $singleKey) {
+            if (is_array($element) && key_exists($singleKey, $element)) {
+                $element = &$element[$singleKey];
+            } elseif (($element instanceof \ArrayAccess) && $element->offsetExists($singleKey)) {
+                $element = &$element[$singleKey];
+            } elseif (is_object($element) && property_exists($element, $singleKey)) {
+                $element = &$element->$singleKey;
+            } else {
+                if (!is_array($element) && !is_object($element)) {
+                    $element = [];
+                }
+
+                if (is_array($element)) {
+                    $element[$singleKey] = [];
+                    $element = &$element[$singleKey];
+                } elseif (is_object(($element))) {
+                    $element->$singleKey = [];
+                    $element = &$element->$singleKey;
+                }
+            }
+        }
+
+        $element[$lastKey] = $value;
+    }
+
+    public static function pluckUnique(mixed $array, string|array $key): array
+    {
+        $column = static::pluck($array, $key);
+        $column = array_unique($column);
+
+        return $column;
+    }
+
+    public static function pluck(mixed $array, string|array $key, bool $preserveKeys = false): array
+    {
+        $column = [];
+        $i = 0;
+        foreach ($array as $cursor => $value) {
+            $columnKey = $preserveKeys ? $cursor : $i++;
+            $column[$columnKey] = static::get($key, $value);
+        }
+
+        return $column;
+    }
+
     public static function filterOutEmpty(mixed $array): array
     {
         return static::filter($array, fn($value) => !empty($value));
