@@ -6,10 +6,10 @@ trait Stats
 {
     protected array $stats = [];
 
-    protected function incrStat($name): void
+    protected function incrStat($name, $incrBy = 1): void
     {
         $this->stats[$name] ??= 0;
-        $this->stats[$name]++;
+        $this->stats[$name] += $incrBy;
     }
 
     public function getImportStats(): array

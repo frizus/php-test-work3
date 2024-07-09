@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Importers\Concerns;
+
+use App\Helpers\Phone;
+
+trait ValueNormalizers
+{
+    protected function normalizerForInteger(mixed $value): string
+    {
+        return preg_replace('/\s/', '', $value);
+    }
+
+    protected function normalizerForPhones(mixed $value): string
+    {
+        $phones = explode(',', $value);
+        foreach ($phones as $i => $phone) {
+            $phones[$i] = Phone::format($phone);
+        }
+
+        return implode(', ', $phones);
+    }
+}
