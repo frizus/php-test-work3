@@ -3,7 +3,7 @@ TODO дополнить
 
 # Установка
 ```bash
-make build
+make full-setup
 make up # запускает сервер на http://localhost:8080
 ```
 
