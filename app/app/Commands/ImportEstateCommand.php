@@ -20,7 +20,7 @@ class ImportEstateCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('filepath', InputArgument::REQUIRED, 'Полный путь до файла')
+            ->addArgument('filepath', InputArgument::REQUIRED, 'Путь до файла от корня сайта')
             ->addOption('format', null, InputOption::VALUE_OPTIONAL, 'Указать конкретно формат файла (xlsx, xls, csv). Если не указывать определяется по расширению');
     }
 
