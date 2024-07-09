@@ -4,5 +4,7 @@ namespace App\Importers\SourceReaders;
 
 interface ISourceReader
 {
-    public function nextRow(): array|null;
+    public function load(): void;
+
+    public function chunkNextRows(?array $map = null): array;
 }
