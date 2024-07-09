@@ -44,9 +44,7 @@ class CreateDatabaseCommand extends Command
             return Command::FAILURE;
         }
 
-        /** @var \PDO $pdo */
-        $pdo = DatabaseManager::getInstance()->connection()->getPdo();
-        $pdo->exec($sql);
+        db_connection()->getPdo()->exec($sql);
 
         $output->writeln("<info>Файл {$filePath} успешно импортирован</info>");
         return Command::SUCCESS;

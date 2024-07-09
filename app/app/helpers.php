@@ -1,14 +1,20 @@
 <?php
 
 use App\Config;
+use App\Database\AbstractDatabase;
 use App\Database\DatabaseManager;
 use App\Database\ILessQL;
 use LessQL\Database;
 
+function db_connection(?string $connectionName = null): AbstractDatabase
+{
+    return DatabaseManager::getInstance()->connection($connectionName);
+}
+
 function db(?string $connectionName = null): Database
 {
     /** @var ILessQL $connection */
-    $connection = DatabaseManager::getInstance()->connection($connectionName);
+    $connection = db_connection($connectionName);
     return $connection->lessQL();
 }
 
