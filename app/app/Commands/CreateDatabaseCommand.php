@@ -44,7 +44,7 @@ class CreateDatabaseCommand extends Command
             return Command::FAILURE;
         }
 
-        /** @var IPDOAble $pdo */
+        /** @var \PDO $pdo */
         $pdo = DatabaseManager::getInstance()->connection()->getPdo();
         $pdo->exec($sql);
 
