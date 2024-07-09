@@ -20,7 +20,7 @@ class ImportEstateCommand extends Command
     protected function configure(): void
     {
         $this
-            ->addArgument('filepath', InputArgument::REQUIRED, 'Путь до файла от корня сайта')
+            ->addArgument('filepath', InputArgument::OPTIONAL, 'Путь до файла от корня сайта (например: estate.xlsx, estate_update.xlsx', 'estate.xlsx')
             ->addOption('format', null, InputOption::VALUE_OPTIONAL, 'Указать конкретно формат файла (xlsx, xls, csv). Если не указывать определяется по расширению');
     }
 
@@ -33,7 +33,7 @@ class ImportEstateCommand extends Command
     {
         $importer = new EstateImporter(
             (new ImporterBuilder($input->getOption('format')))
-                ->setFilePath($input->getArgument('filepath'))
+                ->setFilePath(root_path() . '/' . $input->getArgument('filepath'))
                 ->build()
         );
         $importer->run();
