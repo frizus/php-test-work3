@@ -6,9 +6,9 @@ use App\Helpers\Phone;
 
 trait ValueNormalizers
 {
-    protected function normalizerForInteger(mixed $value): string
+    protected function normalizerForInteger(mixed $value): string|int
     {
-        return preg_replace('/\s/', '', $value);
+        return resolve_value(preg_replace('/\s/', '', $value));
     }
 
     protected function normalizerForPhones(mixed $value): string
