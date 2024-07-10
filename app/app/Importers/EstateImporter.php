@@ -25,11 +25,11 @@ class EstateImporter extends AbstractImporter
         'Комнат' => 'estate.rooms',
     ];
 
-    protected const array MAIN_FIELDS = [
+    protected const array IDENTIFYING_FIELDS = [
         'agency' => 'name',
         'estate' => 'external_id',
-        'contacts' => 'name',
-        'manager' => 'name',
+        'contacts' => ['name', 'phones'],
+        'manager' => ['name', 'agency_id'],
     ];
 
     protected const array FIELD_NORMALIZERS = [
@@ -53,6 +53,12 @@ class EstateImporter extends AbstractImporter
 
     protected array $touched;
 
+    protected array|null $row;
+
+    protected array|null $rowHelper;
+
+    protected array $importOrder;
+
     public function __construct(
         protected ISourceReader $sourceReader
     )
@@ -63,96 +69,173 @@ class EstateImporter extends AbstractImporter
     public function run()
     {
         $this->sourceReader->load();
+        $this->initStats();
         $this->touched = [];
+        $this->importOrder = ['agency', 'manager', 'contacts', 'estate'];
+        $l = count($this->importOrder);
         while ($rows = $this->sourceReader->chunkNextRows(static::MAP)) {
-            $this->importForTable('agency', $rows, true);
-            $this->importForTable('manager', $rows, true);
-            $this->importForTable('contacts', $rows, true);
-            $this->importForTable('estate', $rows);
+            $this->normalizeRowsValues($rows);
+            foreach ($rows as $row) {
+                $this->beforeImport($row);
+                foreach ($this->importOrder as $i => $tableName) {
+                    $this->importRow($tableName, ($i + 1) >= $l);
+                }
+            }
         }
     }
 
-    protected function importForTable(string $tableName, array $rows, bool $cache = false): void
+    protected function statsKeys(): array
     {
-        $mainField = $this->getMainFieldOfTable($tableName);
-        $newEntities = [];
-        $relatedMainFieldValuesForEntities = [];
-        $relatedMainFieldValues = [];
-        $relationsForTable = $this->getRelationsForTable($tableName);
+        $statsKeys = [];
 
-        foreach ($rows as $row) {
-            if (!($key = $this->getNormalizedValue($row[$tableName], $tableName, $mainField))) {
-                continue;
-            }
-
-            $newEntity = Arr::get($tableName, $row);
-            foreach ($newEntity as $fieldKey => $field) {
-                $newEntity[$fieldKey] = $this->getNormalizedValue($newEntity, $tableName, $fieldKey);
-            }
-            $newEntities[$key] = $newEntity;
-
-            foreach ($relationsForTable as $baseForeignId => $relationForTable) {
-                $relatedMainField = static::MAIN_FIELDS[$relationForTable['table']];
-
-                if (!($foreignKeyValue = $this->getNormalizedValue($row[$relationForTable['table']], $relationForTable['table'], $relatedMainField))) {
-                    continue;
-                }
-
-                $relatedMainFieldValuesForEntities[$key][$baseForeignId] = $foreignKeyValue;
-                $relatedMainFieldValues[$baseForeignId][$foreignKeyValue] = $foreignKeyValue;
+        foreach (['agency', 'manager', 'contacts', 'estate'] as $tableName) {
+            foreach (['same', 'updated', 'created'] as $action) {
+                $statsKeys[] = $action . '_' . $tableName;
             }
         }
 
-        if (!$newEntities) {
-            return;
+        return $statsKeys;
+    }
+
+    protected function beforeImport(array $row): void
+    {
+        $this->rowHelper = [];
+        $this->row = &$row;
+
+        foreach ($this->row as $tableName => $entityValues) {
+            $this->prepareSignatures($entityValues, $tableName);
         }
 
-        $existingEntities = $this->selectRows($tableName, $mainField, array_keys($newEntities), $cache);
-        $existingRelatedEntities = [];
-        foreach ($relatedMainFieldValues as $baseForeignId => $foreignKeyValues) {
-            $relatedTable = $relationsForTable[$baseForeignId]['table'];
-            $relatedMainField = static::MAIN_FIELDS[$relatedTable];
-            $existingRelatedEntities[$baseForeignId] = $this->selectRows($relatedTable, $relatedMainField, $foreignKeyValues);
-        }
+        $this->prepareExistingRows('estate');
+    }
 
-        if ($existingEntities) {
-            if ($tableHasOtherFields = $this->tableHasOtherFields($tableName, $mainField)) {
-                foreach ($existingEntities as $key => $existingEntity) {
-                    foreach ($this->getFieldListForTable($tableName, true) as $field) {
-                        $existingEntity[$field] = $newEntities[$key][$field];
-                    }
+    protected function prepareSignatures(array $entityValues, string $tableName): void
+    {
+        $signature = $this->getEntityValuesSignature($entityValues, $tableName);
+        $this->rowHelper[$tableName]['signature'] = $signature;
+    }
 
-                    $this->setForeignKeys($key, $existingEntity, $relationsForTable, $existingRelatedEntities, $relatedMainFieldValuesForEntities);
+    protected function prepareExistingRows(string|array|null $excludeFromCaching = null): void
+    {
+        $excludeFromCaching = Arr::wrap($excludeFromCaching);
 
-                    if ($existingEntity->isClean()) {
-                        $this->incrStat('same_' . $tableName);
-                    } else {
-                        $existingEntity->save();
-                        $this->incrStat('updated_' . $tableName);
-                    }
-                }
-            }
-
-            $countBefore = count($newEntities);
-            $newEntities = array_diff_key($newEntities, $existingEntities);
-            $countAfter = count($newEntities);
-            if (!$tableHasOtherFields) {
-                $this->incrStat('same_' . $tableName, $countBefore - $countAfter);
-            }
-        }
-
-        if (!$newEntities) {
-            return;
-        }
-
-        foreach ($newEntities as $key => $newEntity) {
-            $this->setForeignKeys($key, $newEntity, $relationsForTable, $existingRelatedEntities, $relatedMainFieldValuesForEntities);
-            db()->createRow($tableName, $newEntity)->save();
-            $this->incrStat('created_' . $tableName);
+        foreach ($this->importOrder as $tableName) {
+            $cache = !in_array($tableName, $excludeFromCaching, true);
+            $this->rowHelper[$tableName]['existing'] = $this->selectRow($tableName, $this->row[$tableName], $this->rowHelper[$tableName]['signature'], $cache);
         }
     }
 
-    protected function getFieldListForTable(string $tableName, bool $excludeMainField = false): array
+    protected function rememberNewEntity(Row $entity, $tableName): void
+    {
+        $this->rowHelper[$tableName]['existing'] = $entity;
+    }
+
+    protected function getEntityValuesSignature(array $entityValues, string $tableName): string
+    {
+        $identifyingFields = $this->getIdentifyingEntityValues($entityValues, $tableName, true);
+        return serialize($identifyingFields);
+    }
+
+    protected function getIdentifyingEntityValues(array $entityValues, string $tableName, bool $noForeignIds = false): array|false
+    {
+        $identifyingFields = $this->getIdentifyingFieldsOfTable($tableName);
+        $identifyingEntityValues = [];
+
+        foreach ($identifyingFields as $identifyingField) {
+            if ($theirTableName = $this->get1to1RelationshipTable($tableName, $identifyingField)) {
+                if ($noForeignIds) {
+                    $identifyingEntityValues[$identifyingField] = $this->getIdentifyingEntityValues($this->row[$theirTableName], $theirTableName, $noForeignIds);
+                } else {
+                    if (!$this->rowHelper[$theirTableName]['existing']) {
+                        return false;
+                    }
+                    $identifyingEntityValues[$identifyingField] = $this->rowHelper[$theirTableName]['existing']->id;
+                }
+            } else {
+                $identifyingEntityValues[$identifyingField] = $entityValues[$identifyingField];
+            }
+        }
+
+        return $identifyingEntityValues;
+    }
+
+    protected function importRow(string $tableName, $isLast): void
+    {
+        // $this->rowHelper[$tableName] = ['signature' => ..., 'existing' => ...];
+
+        $entityValues = $this->row[$tableName];
+        if ($existingEntity = $this->rowHelper[$tableName]['existing']) {
+            if ($otherFields = $this->getFieldListForTable($tableName, true)) {
+                foreach ($otherFields as $field) {
+                    $existingEntity[$field] = $entityValues[$field];
+                }
+
+                $this->setForeignKeys($existingEntity, $tableName);
+
+                if ($existingEntity->isClean()) {
+                    $this->incrStat('same_' . $tableName);
+                } else {
+                    $existingEntity->save();
+                    $this->incrStat('updated_' . $tableName);
+                }
+            } else {
+                //$this->incrStat('same_' . $tableName);
+            }
+        } else {
+            $this->setForeignKeys($entityValues, $tableName);
+
+            $newEntity = db()->createRow($tableName, $entityValues)->save();
+
+            $this->incrStat('created_' . $tableName);
+
+            if (!$isLast) {
+                $this->rememberNewEntity($newEntity, $tableName);
+            }
+        }
+    }
+
+    protected function selectRow(string $tableName, array $entityValues, string $signature, bool $cache = true): Row|null
+    {
+        static $cached = [];
+
+        if ($cache) {
+            if (key_exists($signature, $cached)) {
+                return $cached[$signature];
+            }
+        }
+
+        if (!($queryValues = $this->getIdentifyingEntityValues($entityValues, $tableName))) {
+            return null;
+        }
+
+        $query = db()->table($tableName);
+        foreach ($queryValues as $identifyingField => $queryValue) {
+            $query = $query->where($identifyingField, $queryValue);
+        }
+
+        if (!($item2 = $query->fetch())) {
+            return null;
+        }
+
+        if ($cache) {
+            $cached[$signature] = $item2;
+        }
+
+        return $item2;
+    }
+
+    protected function normalizeRowsValues(array &$rows): void
+    {
+        foreach ($rows as &$row) {
+            foreach ($row as $tableName => $entityValues) {
+                foreach ($entityValues as $fieldKey => $value) {
+                    $row[$tableName][$fieldKey] = $this->getNormalizedValue($entityValues, $tableName, $fieldKey);
+                }
+            }
+        }
+    }
+
+    protected function getFieldListForTable(string $tableName, bool $excludeIdentifyingField = false): array
     {
         $fields = [];
         foreach (static::MAP[$tableName] ?? [] as $field) {
@@ -164,23 +247,22 @@ class EstateImporter extends AbstractImporter
             $fields[$parts[1]] = $parts[1];
         }
 
-        if ($excludeMainField) {
-            unset($fields[$this->getMainFieldOfTable($tableName)]);
+        if ($excludeIdentifyingField) {
+            foreach ($this->getIdentifyingFieldsOfTable($tableName) as $identifyingField) {
+                unset($fields[$identifyingField]);
+            }
         }
 
         return $fields;
     }
 
-    protected function setForeignKeys(string $key, mixed &$entity, array $relationsForTable, array $existingRelatedEntities, array $relatedMainFieldValuesForEntities): void
+    protected function setForeignKeys(mixed &$entity, $tableName): void
     {
-        foreach ($relationsForTable as $baseForeignId => $relationForTable) {
-            if (!$existingRelatedEntities[$baseForeignId]) {
-                continue;
-            }
-
-            $relatedMainFieldValue = $relatedMainFieldValuesForEntities[$key][$baseForeignId];
-            if ($relatedEntity = $existingRelatedEntities[$baseForeignId][$relatedMainFieldValue]) {
-                $entity[$baseForeignId] = $relatedEntity->id;
+        foreach ($this->get1to1RelationshipTables($tableName) as $ourTableForeignId => $theirTableName) {
+            if ($existingEntity = $this->rowHelper[$theirTableName]['existing']) {
+                $entity[$ourTableForeignId] = $existingEntity->id;
+            } else {
+                $entity[$ourTableForeignId] = null;
             }
         }
     }
@@ -189,7 +271,8 @@ class EstateImporter extends AbstractImporter
     {
         $value = Arr::get($field, $entity);
 
-        if (!key_exists($tableName, static::FIELD_NORMALIZERS) ||
+        if (is_null(static::FIELD_NORMALIZERS) ||
+            !key_exists($tableName, static::FIELD_NORMALIZERS) ||
             !key_exists($field, static::FIELD_NORMALIZERS[$tableName])
         ) {
             return $value;
@@ -200,90 +283,18 @@ class EstateImporter extends AbstractImporter
         return $this->{'normalizerFor' . $normalizer}($value);
     }
 
-    protected function getMainFieldOfTable(string $tableName): string|null
+    protected function getIdentifyingFieldsOfTable(string $tableName): array
     {
-        return static::MAIN_FIELDS[$tableName] ?? null;
+        return Arr::wrap(static::IDENTIFYING_FIELDS[$tableName]);
     }
 
-    protected function getRelationsForTable(string $tableName)
+    protected function get1to1RelationshipTable(string $tableName, string|int $ourTableForeignId): ?string
     {
-        static $relationsForTables = [];
-
-        if (!key_exists($tableName, $relationsForTables)) {
-            $relationsForTable = &$relationsForTables[$tableName];
-            $relationsForTable = [];
-
-            if (key_exists($tableName, static::RELATIONS_1_TO_1)) {
-                foreach (static::RELATIONS_1_TO_1[$tableName] as $baseForeignId => $foreignTable) {
-                    $foreignTable = Arr::wrap($foreignTable);
-                    $relationsForTable[$baseForeignId] = [
-                        'table' => $foreignTable[0],
-                        'key' => $foreignTable[1] ?? 'id',
-                    ];
-                }
-            }
-        }
-
-        return $relationsForTables[$tableName];
+        return $this->get1to1RelationshipTables($tableName)[$ourTableForeignId] ?? null;
     }
 
-    /**
-     * @param string $tableName
-     * @param string $mainField
-     * @param array $values
-     * @param bool $cache
-     * @return Row[]
-     */
-    protected function selectRows(string $tableName, string $mainField, array $values, bool $cache = true): array
+    protected function get1to1RelationshipTables(string $tableName): array
     {
-        static $cached = [];
-        $result = [];
-
-        if (!$values) {
-            return $result;
-        }
-
-        if ($cache) {
-            foreach ($values as $i => $value) {
-                if (key_exists($value, $cached)) {
-                    $result[$value] = $cached[$value];
-                    unset($values[$i]);
-                }
-            }
-        }
-
-        if (!$values) {
-            return $result;
-        }
-
-        $result2 = db()->table($tableName)->where($mainField, array_values($values))->fetchAll();
-
-        foreach ($result2 as $i => $item2) {
-            $value = $item2[$mainField];
-            $cached[$value] = &$result2[$i];
-            $result[$value] = $cached[$value];
-            $this->touched[$tableName][$value] = null;
-            unset($result2[$i]);
-        }
-
-        return $result;
-    }
-
-    protected function tableHasOtherFields(string $tableName, string $mainField = 'name'): bool
-    {
-        if (isset(static::MAP[$tableName]) &&
-            key_exists($mainField, static::MAP[$tableName]) &&
-            (count(static::MAP[$tableName]) > 1)
-        ) {
-            return true;
-        }
-
-        if (isset(static::RELATIONS_1_TO_1[$tableName]) &&
-            !empty(static::RELATIONS_1_TO_1[$tableName])
-        ) {
-            return true;
-        }
-
-        return false;
+        return static::RELATIONS_1_TO_1[$tableName] ?? [];
     }
 }
