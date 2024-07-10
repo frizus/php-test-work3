@@ -43,9 +43,6 @@ class PhpSpreadSheetSourceReader extends AbstractSourceReader implements ISource
                 case 'xls':
                     $reader = new Xls();
                     break;
-                case 'csv':
-                    $reader = new Csv();
-                    break;
                 default:
                     throw new UnsupportedFeatureException("Unsupported file type \"{$this->fileType}\"");
                     break;
