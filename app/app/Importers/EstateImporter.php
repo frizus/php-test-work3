@@ -208,8 +208,9 @@ class EstateImporter extends AbstractImporter
         static $cached = [];
 
         if ($cache) {
-            if (key_exists($signature, $cached)) {
-                return $cached[$signature];
+            $cacheKey = $tableName . ' ' . $signature;
+            if (key_exists($cacheKey, $cached)) {
+                return $cached[$cacheKey];
             }
         }
 
@@ -227,7 +228,7 @@ class EstateImporter extends AbstractImporter
         }
 
         if ($cache) {
-            $cached[$signature] = $item2;
+            $cached[$cacheKey] = $item2;
         }
 
         return $item2;
