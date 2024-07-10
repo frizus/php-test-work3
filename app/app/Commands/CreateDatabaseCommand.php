@@ -46,7 +46,7 @@ class CreateDatabaseCommand extends Command
 
         db_connection()->getPdo()->exec($sql);
 
-        $output->writeln("<info>Файл {$filePath} успешно импортирован</info>");
+        $output->writeln('<info>Файл "' . $filePath . '" успешно импортирован</info>');
         return Command::SUCCESS;
     }
 }
