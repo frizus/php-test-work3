@@ -11,3 +11,5 @@ import:
 
 update-import:
 	./console app:import-estate estate_update.xlsx
+
+import-update: update-import
