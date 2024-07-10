@@ -53,9 +53,11 @@ class EstateImporter extends AbstractImporter
 
     protected array $touched;
 
-    protected array|null $row;
+    protected ?array $row;
 
-    protected array|null $rowHelper;
+    protected ?array $rowHelper;
+
+    protected ?string $importingTable;
 
     protected array $importOrder;
 
@@ -66,7 +68,7 @@ class EstateImporter extends AbstractImporter
 
     }
 
-    public function run()
+    public function run(): void
     {
         $this->sourceReader->load();
         $this->initStats();
@@ -78,7 +80,8 @@ class EstateImporter extends AbstractImporter
             foreach ($rows as $row) {
                 $this->beforeImport($row);
                 foreach ($this->importOrder as $i => $tableName) {
-                    $this->importRow($tableName, ($i + 1) >= $l);
+                    $this->importingTable = $tableName;
+                    $this->importRow(($i + 1) >= $l);
                 }
             }
         }
@@ -125,9 +128,9 @@ class EstateImporter extends AbstractImporter
         }
     }
 
-    protected function rememberNewEntity(Row $entity, $tableName): void
+    protected function rememberNewEntity(Row $entity): void
     {
-        $this->rowHelper[$tableName]['existing'] = $entity;
+        $this->rowHelper[$this->importingTable]['existing'] = $entity;
     }
 
     protected function getEntityValuesSignature(array $entityValues, string $tableName): string
@@ -136,7 +139,7 @@ class EstateImporter extends AbstractImporter
         return serialize($identifyingFields);
     }
 
-    protected function getIdentifyingEntityValues(array $entityValues, string $tableName, bool $noForeignIds = false): array|false
+    protected function getIdentifyingEntityValues(mixed $entityValues, string $tableName, bool $noForeignIds = false): array|false
     {
         $identifyingFields = $this->getIdentifyingFieldsOfTable($tableName);
         $identifyingEntityValues = [];
@@ -159,38 +162,44 @@ class EstateImporter extends AbstractImporter
         return $identifyingEntityValues;
     }
 
-    protected function importRow(string $tableName, $isLast): void
+    protected function importRow(bool $isLast): void
     {
-        // $this->rowHelper[$tableName] = ['signature' => ..., 'existing' => ...];
+        // $this->rowHelper[$this->importingTable] = ['signature' => ..., 'existing' => ...];
 
-        $entityValues = $this->row[$tableName];
-        if ($existingEntity = $this->rowHelper[$tableName]['existing']) {
-            if ($otherFields = $this->getFieldListForTable($tableName, true)) {
+        $entityValues = $this->row[$this->importingTable];
+        if ($existingEntity = $this->rowHelper[$this->importingTable]['existing']) {
+            if ($otherFields = $this->getNotIdentifyingFieldListForTable($this->importingTable, true)) {
                 foreach ($otherFields as $field) {
                     $existingEntity[$field] = $entityValues[$field];
                 }
 
-                $this->setForeignKeys($existingEntity, $tableName);
+                $this->setForeignKeys($existingEntity);
 
                 if ($existingEntity->isClean()) {
-                    $this->incrStat('same_' . $tableName);
+                    if ($this->entityNotTouched()) {
+                        $this->incrStat('same_' . $this->importingTable);
+                        $this->touchedEntity($existingEntity);
+                    }
                 } else {
                     $existingEntity->save();
-                    $this->incrStat('updated_' . $tableName);
+                    $this->incrStat('updated_' . $this->importingTable);
+                    $this->touchedEntity($existingEntity);
                 }
-            } else {
-                //$this->incrStat('same_' . $tableName);
+            } elseif ($this->entityNotTouched()) {
+                $this->incrStat('same_' . $this->importingTable);
+                $this->touchedEntity($existingEntity);
             }
         } else {
-            $this->setForeignKeys($entityValues, $tableName);
+            $this->setForeignKeys($entityValues);
 
-            $newEntity = db()->createRow($tableName, $entityValues)->save();
+            $newEntity = db()->createRow($this->importingTable, $entityValues)->save();
 
-            $this->incrStat('created_' . $tableName);
+            $this->incrStat('created_' . $this->importingTable);
 
             if (!$isLast) {
-                $this->rememberNewEntity($newEntity, $tableName);
+                $this->rememberNewEntity($newEntity);
             }
+            $this->touchedEntity($newEntity);
         }
     }
 
@@ -235,30 +244,34 @@ class EstateImporter extends AbstractImporter
         }
     }
 
-    protected function getFieldListForTable(string $tableName, bool $excludeIdentifyingField = false): array
+    protected function getNotIdentifyingFieldListForTable(string $tableName): array
     {
-        $fields = [];
-        foreach (static::MAP[$tableName] ?? [] as $field) {
-            $parts = explode('.', $field, 2);
-            if ($tableName !== $parts[0]) {
-                continue;
+        static $lists = [];
+        $key = $tableName;
+
+        if (!key_exists($key, $lists)) {
+            $list = &$lists[$key];
+            $list = [];
+            foreach (static::MAP ?? [] as $field) {
+                $parts = explode('.', $field, 2);
+                if ($tableName !== $parts[0]) {
+                    continue;
+                }
+
+                $list[$parts[1]] = $parts[1];
             }
 
-            $fields[$parts[1]] = $parts[1];
-        }
-
-        if ($excludeIdentifyingField) {
             foreach ($this->getIdentifyingFieldsOfTable($tableName) as $identifyingField) {
-                unset($fields[$identifyingField]);
+                unset($list[$identifyingField]);
             }
         }
 
-        return $fields;
+        return $lists[$key];
     }
 
-    protected function setForeignKeys(mixed &$entity, $tableName): void
+    protected function setForeignKeys(mixed &$entity): void
     {
-        foreach ($this->get1to1RelationshipTables($tableName) as $ourTableForeignId => $theirTableName) {
+        foreach ($this->get1to1RelationshipTables($this->importingTable) as $ourTableForeignId => $theirTableName) {
             if ($existingEntity = $this->rowHelper[$theirTableName]['existing']) {
                 $entity[$ourTableForeignId] = $existingEntity->id;
             } else {
@@ -296,5 +309,17 @@ class EstateImporter extends AbstractImporter
     protected function get1to1RelationshipTables(string $tableName): array
     {
         return static::RELATIONS_1_TO_1[$tableName] ?? [];
+    }
+
+    protected function touchedEntity(mixed $entity): void
+    {
+        $signature = $this->rowHelper[$this->importingTable]['signature'];
+        $this->touched[$signature] = $this->getIdentifyingEntityValues($entity, $this->importingTable);
+    }
+
+    protected function entityNotTouched(): bool
+    {
+        $signature = $this->rowHelper[$this->importingTable]['signature'];
+        return !key_exists($signature, $this->touched);
     }
 }
