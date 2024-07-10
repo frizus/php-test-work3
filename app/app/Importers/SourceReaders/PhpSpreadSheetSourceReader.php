@@ -95,13 +95,11 @@ class PhpSpreadSheetSourceReader extends AbstractSourceReader implements ISource
     {
         if (is_string($value)) {
             $value = trim($value);
-        }
-
-        if (is_numeric($value)) {
-            $value = (string)$value;
-        }
-
-        if (is_null($value) || is_bool($value)) {
+        } elseif (validate_int($value)) {
+            $value = (int)$value;
+        } elseif (validate_float($value)) {
+            $value = (float)$value;
+        } elseif (is_null($value) || is_bool($value)) {
             $value = '';
         }
 
