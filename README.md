@@ -1,4 +1,5 @@
 # О репозитории
+Используется [phpenv](https://github.com/phpenv/phpenv)
 TODO дополнить
 
 # Установка
@@ -7,9 +8,33 @@ make full-setup
 make up # запускает сервер на http://localhost:8080
 ```
 
+# Использование
+Импортирование недвижимости:
+* Способ не подключаясь к консоли контейнера:
+    ```bash
+    # Импортировать `app/estate.xlsx`
+    make import-estate
+    # Импортировать `app/estate_update.xlsx`
+    make import-estate-update
+    ```
 
-Используется [phpenv](https://github.com/phpenv/phpenv)
+* Через консоль контейнера:
+    ```bash
+    # После `make up` из установки
+    make connect-php
+  
+    # Импортировать `app/estate.xlsx`
+    make import-estate 
+    # или
+    ./console app:import-estate -v
+  
+    # Импортировать `app/estate_update.xlsx`
+    make import-estate-update
+    # или
+    ./console app:import-estate -v estate_update.xlsx
+    ```
 
+TODO дополнить
 
 ### Настройка xdebug
 
