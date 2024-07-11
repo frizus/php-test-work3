@@ -4,30 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\Resource;
 use App\Http\Requests\ContactIndexRequest;
+use App\Http\Requests\ManagerCreateRequest;
 use App\Http\Requests\ManagerIndexRequest;
 use App\Http\Requests\RestShowRequest;
 use App\Repositories\ContactRepository;
 use App\Repositories\IRepository;
 use App\Repositories\ManagerRepository;
 
-class ManagersController
+class ManagersController extends ApiController
 {
     use Resource;
 
-    public function index()
+    public function index(): string
     {
-        return $this->listData(new ManagerIndexRequest(), $this->getRepository());
+        return $this->listData(new ManagerIndexRequest(), $this->repository);
     }
 
-    public function create()
+    public function create(): string
     {
-
+        return $this->createItem(new ManagerCreateRequest(), $this->repository);
     }
 
-    public function show($id)
+    public function show($id): string
     {
-        $repository = $this->getRepository();
-        return $this->itemData(new RestShowRequest($repository->getTableName(), ['id' => $id]), $repository);
+        return $this->itemData(new RestShowRequest($this->repository->getTableName(), ['id' => $id]), $this->repository);
     }
 
     public function update($id)

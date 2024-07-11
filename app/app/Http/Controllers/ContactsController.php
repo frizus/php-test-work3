@@ -3,29 +3,29 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\Resource;
+use App\Http\Requests\ContactCreateRequest;
 use App\Http\Requests\ContactIndexRequest;
 use App\Http\Requests\RestShowRequest;
 use App\Repositories\ContactRepository;
 use App\Repositories\IRepository;
 
-class ContactsController
+class ContactsController extends ApiController
 {
     use Resource;
 
     public function index()
     {
-        return $this->listData(new ContactIndexRequest(), $this->getRepository());
+        return $this->listData(new ContactIndexRequest(), $this->repository);
     }
 
-    public function create()
+    public function create(): string
     {
-
+        return $this->createItem(new ContactCreateRequest(), $this->repository);
     }
 
-    public function show($id)
+    public function show($id): string
     {
-        $repository = $this->getRepository();
-        return $this->itemData(new RestShowRequest($repository->getTableName(), ['id' => $id]), $repository);
+        return $this->itemData(new RestShowRequest($this->repository->getTableName(), ['id' => $id]), $this->repository);
     }
 
     public function update($id)

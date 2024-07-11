@@ -15,4 +15,6 @@ interface IRepository
     public function save(mixed $entity): bool;
 
     public function filterBy(array $queryValues = []): array;
+
+    public function getTableName(): string;
 }

@@ -41,4 +41,21 @@ trait Resource
         $this->setAsXmlResponse();
         return $result;
     }
+
+    protected function createItem(BaseRequest $request, IRepository $repository): string
+    {
+        try {
+            $entity = db()->createRow($repository->getTableName(), $request->input());
+            $repository->save($entity);
+        } catch (ValidationException $e) {
+            http_response_code(400);
+            $result = validationErrorToXml($e);
+        } catch (\PDOException $e) {
+            http_response_code(500);
+            $result = errorToXml('Не удалось создать запись');
+        }
+
+        $this->setAsXmlResponse();
+        return $result;
+    }
 }
