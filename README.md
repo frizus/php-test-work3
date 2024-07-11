@@ -1,47 +1,62 @@
 # О репозитории
 Используется [phpenv](https://github.com/phpenv/phpenv)
-Создание БД из `dump.sql`, импорт данных (создание, обновление, не удаление) в таблицы из Excel файлов
+Создание БД из `dump.sql`, импорт данных (создание, обновление, не удаление) в БД из Excel файлов
 REST для просмотра списков с фильтрами
 
-* http://localhost:8080/ - главная содержит ссылки на другие страницы
-* 
-```
- # главная
-```
+Настроен конфиг докера для работы 
 
-# Установка
+## Системные требования
+
+* Docker >= 26.1.4
+* Утилита `make`
+* `WSL2 Ubuntu` (не обязательно), на самой Ubuntu без `WSL2` работоспособность не проверялась
+
+## Установка
+Через докер
 ```bash
 make full-setup
 make up # запускает сервер на http://localhost:8080
 ```
 
-# Использование
+## Использование
+* http://localhost:8080/ - главная содержит ссылки на другие страницы
+
 Импортирование недвижимости:
 * Способ не подключаясь к консоли контейнера:
-    ```bash
-    # Импортировать `app/estate.xlsx`
-    make import-estate
-    # Импортировать `app/estate_update.xlsx`
-    make import-estate-update
-    ```
+  ```bash
+  # Импортировать `app/estate.xlsx`
+  make import-estate
+  # Импортировать `app/estate_update.xlsx`
+  make import-estate-update
+  ```
 
-* Через консоль контейнера:
-    ```bash
-    # После `make up` из установки
-    make connect-php
-  
-    # Импортировать `app/estate.xlsx`
-    make import-estate 
-    # или
-    ./console app:import-estate -v
-  
-    # Импортировать `app/estate_update.xlsx`
-    make import-estate-update
-    # или
-    ./console app:import-estate -v estate_update.xlsx
-    ```
+* Через консоль PHP-контейнера:
+  ```bash
+  # Подключение к консоли контейнера (после `make up`)
+  make connect-php
 
-TODO дополнить
+  # Импортировать `app/estate.xlsx`
+  make import-estate 
+  # или
+  ./console app:import-estate -v
+
+  # Импортировать `app/estate_update.xlsx`
+  make import-estate-update
+  # или
+  ./console app:import-estate -v estate_update.xlsx
+  ```
+
+* Пересоздание БД (через консоль PHP-контейнера):
+  ```bash
+  # Подключение к консоли контейнера (после `make up`)
+  make connect-php
+  
+  # Пересоздать БД
+  make db
+  # или
+  ./console app:db -v
+  ```
+
 
 ### Настройка xdebug
 
@@ -99,7 +114,7 @@ make rebuild-php
 
 ### WSL2 Ubuntu:
 
-Редактирование файлов проекта
+Для того, чтобы были права на редактирование файлов проекта надо сделать следующее:
 
 #### Новая группа для текущего пользователя:
 
@@ -162,4 +177,5 @@ https://stackoverflow.com/a/40472391
 3. Подключение к БД - 4.916 часа
 4. REST API - 7.5 часа
 5. Линтер - 0.16 часа
-6. Полировка, правка багов
+6. Полировка, правка багов - 0.33 часа
+Всего: 26.486 часа (4 дня)

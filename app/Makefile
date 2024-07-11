@@ -16,7 +16,7 @@ linter:
 	./vendor/bin/php-cs-fixer fix .
 
 test:
-	echo "Тесты не написаны"
+	# Тесты не написаны
 
 lint: linter
 

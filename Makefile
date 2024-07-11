@@ -49,6 +49,11 @@ import-estate-update:
 	make import-estate-update\
 	"
 
+test:
+	docker-compose run --rm php bash -i -c "\
+	make test\
+	"
+
 connect-php:
 	docker-compose exec -it php bash
 
@@ -61,3 +66,5 @@ compose: run
 up: run
 
 rebuild: build-no-cache
+
+.PHONY: test
