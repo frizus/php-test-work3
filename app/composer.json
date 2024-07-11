@@ -3,7 +3,11 @@
         "symfony/console": "^7.1",
         "phpoffice/phpspreadsheet": "^2.1",
         "morris/lessql": "^1.0",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+        "phroute/phroute": "^2.2",
+        "ext-simplexml": "*",
+        "spatie/array-to-xml": "^3.3",
+        "ext-dom": "*"
     },
     "autoload": {
         "psr-4": {
