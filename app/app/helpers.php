@@ -77,12 +77,8 @@ function apiResource($route, $controllerClass, RouteCollector $collector): void
     $collector->delete($route . $idPart, [$controllerClass, 'delete']);
 }
 
-/**
- * @throws DOMException
- */
-function allDataToXml($tableName, $fields = null): string
+function convertCollectionToXml($result, $fields = null): string
 {
-    $result = db()->table($tableName)->fetchAll();
     return arrayToXml(prepareCollectionForXmlRender($result, $fields, fn(Row $row) => $row->getData()));
 }
 
@@ -113,8 +109,6 @@ function prepareCollectionForXmlRender($result, $specificColumns = null, ?\Closu
 
 function validationError(ValidationException $e)
 {
-    http_response_code(400);
-
     $result = [];
     foreach ($e->getMessages() as $message) {
         $result[] = (string)$message;
