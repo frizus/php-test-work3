@@ -42,12 +42,16 @@ class EstateImporter extends AbstractImporter
     ];
 
     protected const array RELATIONS_1_TO_1 = [
+        'contacts' => [
+            'agency_id' => 'agency',
+        ],
         'manager' => [
             'agency_id' => 'agency',
         ],
         'estate' => [
             'contact_id' => 'contacts',
             'manager_id' => 'manager',
+            'agency_id' => 'agency',
         ]
     ];
 
