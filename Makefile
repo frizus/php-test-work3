@@ -4,7 +4,7 @@ run:
 copy-env:
 	cp -n .env.default .env || true
 
-full-setup: clear build
+full-setup: copy-env clear build
 	docker-compose run --rm php bash -i -c "\
 	make setup\
 	"

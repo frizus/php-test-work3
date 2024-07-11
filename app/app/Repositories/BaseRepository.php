@@ -76,7 +76,7 @@ abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
             return $queryValues;
         }
 
-        return Arr::filter(array_intersect_key($queryValues, array_fill_keys($filterBy, null)), fn ($value) => (bool)$value);
+        return Arr::filter(array_intersect_key($queryValues, array_fill_keys($filterBy, null)), fn ($value) => !!$value);
     }
 
     public function getTableName(): string

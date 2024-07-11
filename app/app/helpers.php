@@ -132,8 +132,12 @@ function getItemData(mixed $item, ?\Closure $getItemFieldsClosure): mixed
 function validationErrorToXml(ValidationException $e): string
 {
     $result = [];
-    foreach ($e->getMessages() as $message) {
-        $result[] = (string)$message;
+    if (method_exists($e, 'getMessage')) {
+        $result[] = (string)$e->getMessage();
+    } else {
+        foreach ($e->getMessages() as $message) {
+            $result[] = (string)$message;
+        }
     }
 
     return errorToXml($result);

@@ -18,6 +18,6 @@ class ContactIndexRequest extends RestIndexRequest
     protected function callValidator(): void
     {
         Validator::key('agency_id', Validator::intVal()->positive()->existsInDatabase('agency'), false)
-            ->assert($this->data);
+            ->check($this->data);
     }
 }

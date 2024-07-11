@@ -22,6 +22,6 @@ class EstateIndexRequest extends RestIndexRequest
         Validator::key('agency_id', Validator::intVal()->positive()->existsInDatabase('agency'), false)
             ->key('contact_id', Validator::intVal()->positive()->existsInDatabase('contacts'), false)
             ->key('manager_id', Validator::intVal()->positive()->existsInDatabase('manager'), false)
-            ->assert($this->data);
+            ->check($this->data);
     }
 }

@@ -18,6 +18,6 @@ class RestShowRequest extends BaseRequest
     protected function callValidator(): void
     {
         Validator::key('id', Validator::intVal()->positive()->existsInDatabase($this->tableName))
-            ->assert($this->data);
+            ->check($this->data);
     }
 }
