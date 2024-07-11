@@ -1,15 +1,16 @@
 # О репозитории
-Используется [phpenv](https://github.com/phpenv/phpenv)
 Создание БД из `dump.sql`, импорт данных (создание, обновление, не удаление) в БД из Excel файлов
-REST для просмотра списков с фильтрами
+REST для просмотра списков с фильтрами.
 
-Настроен конфиг докера для работы 
+Настроен конфиг докера для работы.
+
+Используется [phpenv](https://github.com/phpenv/phpenv).
 
 ## Системные требования
 
 * Docker >= 26.1.4
 * Утилита `make`
-* `WSL2 Ubuntu` (не обязательно), на самой Ubuntu без `WSL2` работоспособность не проверялась
+* `WSL2 Ubuntu` (не обязательно); на самой Linux без WSL2 работоспособность не проверял
 
 ## Установка
 Через докер
@@ -24,23 +25,23 @@ make up # запускает сервер на http://localhost:8080
 Импортирование недвижимости:
 * Способ не подключаясь к консоли контейнера:
   ```bash
-  # Импортировать `app/estate.xlsx`
+  # Импортировать app/estate.xlsx
   make import-estate
-  # Импортировать `app/estate_update.xlsx`
+  # Импортировать app/estate_update.xlsx
   make import-estate-update
   ```
 
 * Через консоль PHP-контейнера:
   ```bash
-  # Подключение к консоли контейнера (после `make up`)
+  # Подключение к консоли контейнера (после make up)
   make connect-php
 
-  # Импортировать `app/estate.xlsx`
+  # Импортировать app/estate.xlsx
   make import-estate 
   # или
   ./console app:import-estate -v
 
-  # Импортировать `app/estate_update.xlsx`
+  # Импортировать app/estate_update.xlsx
   make import-estate-update
   # или
   ./console app:import-estate -v estate_update.xlsx
@@ -48,7 +49,7 @@ make up # запускает сервер на http://localhost:8080
 
 * Пересоздание БД (через консоль PHP-контейнера):
   ```bash
-  # Подключение к консоли контейнера (после `make up`)
+  # Подключение к консоли контейнера (после make up)
   make connect-php
   
   # Пересоздать БД
@@ -178,4 +179,5 @@ https://stackoverflow.com/a/40472391
 4. REST API - 7.5 часа
 5. Линтер - 0.16 часа
 6. Полировка, правка багов - 0.33 часа
+
 Всего: 26.486 часа (4 дня)
