@@ -1,7 +1,7 @@
 install-libs:
 	composer install
 
-setup: install-libs db
+setup: install-libs db import-estate
 
 db:
 	./console app:db
