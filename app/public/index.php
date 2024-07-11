@@ -1,14 +1,22 @@
 <?php
 
-use App\Controllers\AgenciesController;
-use App\Controllers\ContactsController;
-use App\Controllers\EstatesController;
-use App\Controllers\HomeController;
-use App\Controllers\ManagersController;
+use App\Http\Controllers\AgenciesController;
+use App\Http\Controllers\ContactsController;
+use App\Http\Controllers\EstatesController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ManagersController;
 use Phroute\Phroute\Dispatcher;
 use Phroute\Phroute\RouteCollector;
+use Respect\Validation\Factory;
+
+// ini_set('display_errors', 'On');
 
 require __DIR__ . '/../vendor/autoload.php';
+
+Factory::setDefaultInstance(
+    (new Factory())
+        ->withRuleNamespace('App\\Http\\Requests\\Validator\\Rules')
+);
 
 $collector = new RouteCollector();
 
@@ -19,7 +27,7 @@ apiResource('/managers', ManagersController::class, $collector);
 apiResource('/estates', EstatesController::class, $collector);
 
 try {
-    echo $response = (new Dispatcher($collector->getData()))->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);
+    echo (new Dispatcher($collector->getData()))->dispatch($_SERVER['REQUEST_METHOD'], strtok($_SERVER['REQUEST_URI'], '?'));
 } catch (Exception $e) {
     if (!config('app.debug')) {
         throw $e;
