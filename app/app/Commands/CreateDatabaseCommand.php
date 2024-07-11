@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use App\Database\DatabaseManager;
-use App\Database\IPDOAble;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

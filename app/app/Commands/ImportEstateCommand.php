@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Importers\EstateImporter;
 use App\Importers\ImporterBuilder;
+use App\UnsupportedFeatureException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -28,6 +29,8 @@ class ImportEstateCommand extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      * @return int
+     * @throws UnsupportedFeatureException
+     * @throws UnsupportedFeatureException
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {

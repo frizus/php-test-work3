@@ -10,13 +10,9 @@ class DatabaseClassResolver
 
     public static function resolve(string $driver): string
     {
-        switch ($driver) {
-            case 'pgsql':
-                return PostgreSqlDatabase::class;
-                break;
-            default:
-                throw new UnsupportedFeatureException("DB driver {$driver} is not supported.");
-                break;
-        }
+        return match ($driver) {
+            'pgsql' => PostgreSqlDatabase::class,
+            default => throw new UnsupportedFeatureException("DB driver {$driver} is not supported."),
+        };
     }
 }

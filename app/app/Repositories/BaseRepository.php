@@ -23,6 +23,9 @@ abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
         return db()->table(static::TABLE_NAME, $id);
     }
 
+    /**
+     * @throws ItemNotFoundException
+     */
     public function getByIdOrFail(int $id): Row
     {
         if (!($entity = $this->getById($id))) {

@@ -11,14 +11,9 @@ class ImporterFactory
 
     public function __construct(?string $fileType = null)
     {
-        switch ($fileType) {
-            case 'xlsx':
-            case 'xls':
-            case 'csv':
-            default:
-                $this->sourceReader = new PhpSpreadSheetSourceReader();
-                break;
-        }
+        $this->sourceReader = match ($fileType) {
+            default => new PhpSpreadSheetSourceReader(),
+        };
     }
 
     public function getSourceReader(): ISourceReader

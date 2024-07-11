@@ -133,7 +133,7 @@ function validationErrorToXml(ValidationException $e): string
 {
     $result = [];
     if (method_exists($e, 'getMessage')) {
-        $result[] = (string)$e->getMessage();
+        $result[] = $e->getMessage();
     } else {
         foreach ($e->getMessages() as $message) {
             $result[] = (string)$message;

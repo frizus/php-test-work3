@@ -4,7 +4,7 @@ install-libs:
 setup: install-libs db import-estate
 
 db:
-	./console app:db
+	./console app:db -v
 
 import-estate:
 	./console app:import-estate -v

@@ -5,7 +5,6 @@ namespace App\Importers\SourceReaders;
 use App\Helpers\Arr;
 use App\UnsupportedFeatureException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Reader\Csv;
 use PhpOffice\PhpSpreadsheet\Reader\IReader;
 use PhpOffice\PhpSpreadsheet\Reader\Xls;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx;
@@ -36,17 +35,11 @@ class PhpSpreadSheetSourceReader extends AbstractSourceReader implements ISource
         if (!$this->fileType) {
             $this->spreadsheet = IOFactory::load($this->filePath, IReader::READ_DATA_ONLY);
         } else {
-            switch ($this->fileType) {
-                case 'xlsx':
-                    $reader = new Xlsx();
-                    break;
-                case 'xls':
-                    $reader = new Xls();
-                    break;
-                default:
-                    throw new UnsupportedFeatureException("Unsupported file type \"{$this->fileType}\"");
-                    break;
-            }
+            $reader = match ($this->fileType) {
+                'xlsx' => new Xlsx(),
+                'xls' => new Xls(),
+                default => throw new UnsupportedFeatureException("Unsupported file type \"{$this->fileType}\""),
+            };
             $reader->setReadDataOnly(true);
             $this->spreadsheet = $reader->load($this->filePath);
         }

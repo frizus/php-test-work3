@@ -178,7 +178,7 @@ class EstateImporter extends AbstractImporter
 
         $entityValues = $this->row[$this->importingTable];
         if ($existingEntity = $this->rowHelper[$this->importingTable]['existing']) {
-            if ($otherFields = $this->getNotIdentifyingFieldListForTable($this->importingTable, true)) {
+            if ($otherFields = $this->getNotIdentifyingFieldListForTable($this->importingTable)) {
                 foreach ($otherFields as $field) {
                     $existingEntity[$field] = $entityValues[$field];
                 }

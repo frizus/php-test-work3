@@ -2,10 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Repositories\AgencyRepository;
 use App\Repositories\ContactRepository;
-use Respect\Validation\Exceptions\ValidationException;
-use Respect\Validation\Factory;
 use Respect\Validation\Validator;
 
 class ContactIndexRequest extends RestIndexRequest

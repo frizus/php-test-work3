@@ -12,7 +12,7 @@ class EstatesController extends ApiController
 {
     use Resource;
 
-    public function index()
+    public function index(): string
     {
         return $this->listData(new EstateIndexRequest(), $this->repository);
     }

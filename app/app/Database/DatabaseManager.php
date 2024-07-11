@@ -3,7 +3,6 @@
 namespace App\Database;
 
 use App\UnsupportedFeatureException;
-use LessQL\Database;
 
 class DatabaseManager
 {

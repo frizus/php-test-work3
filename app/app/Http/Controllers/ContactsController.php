@@ -12,7 +12,7 @@ class ContactsController extends ApiController
 {
     use Resource;
 
-    public function index()
+    public function index(): string
     {
         return $this->listData(new ContactIndexRequest(), $this->repository);
     }

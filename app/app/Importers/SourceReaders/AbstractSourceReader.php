@@ -8,7 +8,7 @@ class AbstractSourceReader
 
     protected string $fileType;
 
-    public function setFileType(?string $fileType)
+    public function setFileType(?string $fileType): void
     {
         $this->fileType = mb_strtolower($fileType);
     }

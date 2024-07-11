@@ -48,9 +48,7 @@ class Arr
     public static function pluckUnique(mixed $array, string|array $key): array
     {
         $column = static::pluck($array, $key);
-        $column = array_unique($column);
-
-        return $column;
+        return array_unique($column);
     }
 
     public static function pluck(mixed $array, string|array $key, bool $preserveKeys = false): array
@@ -180,7 +178,7 @@ class Arr
         }
     }
 
-    public static function forget(mixed &$array, array $key): void
+    public static function forget(mixed &$array, string|array $key): void
     {
         if (!is_array($key)) {
             $key = explode('.', $key);
