@@ -74,3 +74,39 @@ function apiResource($route, $controllerClass, RouteCollector $collector): void
     $collector->put($route . $idPart, [$controllerClass, 'update']);
     $collector->delete($route . $idPart, [$controllerClass, 'delete']);
 }
+
+function allDataToXml($tableName, $fields = null): string
+{
+    $result = db()->table($tableName)->fetchAll();
+    return \arrayToXml(prepareCollectionForXmlRender($result, $fields));
+}
+
+function prepareCollectionForXmlRender($result, $specificColumns = null): array
+{
+    $array = ['item' => []];
+
+    $needSpecificColumns = is_array($specificColumns) && !empty($specificColumns);
+    if ($needSpecificColumns) {
+        $specificColumns = array_fill_keys($specificColumns, null);
+    }
+
+    foreach ($result as $item) {
+        $itemData = $item->getData();
+        if ($needSpecificColumns) {
+            $itemData = array_intersect_key($itemData, $specificColumns);
+        }
+        $array['item'][] = $itemData;
+    }
+
+    return $array;
+}
+
+/**
+ * @throws DOMException
+ */
+function arrayToXml($array): string
+{
+    $arrayToXml = new ArrayToXml($array, '', true, 'UTF-8');
+    $arrayToXml->prettify();
+    return $arrayToXml->toXml();
+}
