@@ -110,3 +110,22 @@ function arrayToXml($array): string
     $arrayToXml->prettify();
     return $arrayToXml->toXml();
 }
+
+function view($viewName, $vars = []): string
+{
+    return include_buffered(root_path() . '/resources/views/' . $viewName . '.php', $vars);
+}
+
+function include_buffered($filePath, $vars = []): string
+{
+    extract($vars);
+    ob_start();
+    require $filePath;
+    return (string)ob_get_clean();
+}
+
+function render_exception(Throwable $e): string
+{
+    return $e->getFile() . ' строка <strong>' . $e->getLine() . '</strong><br>' .
+        '<br>' . $e->getMessage();
+}
