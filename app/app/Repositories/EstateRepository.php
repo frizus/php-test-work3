@@ -9,4 +9,6 @@ class EstateRepository extends BaseRepository
         'contact_id',
         'manager_id'
     ];
+
+    public const string TABLE_NAME = 'estate';
 }

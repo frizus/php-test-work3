@@ -5,27 +5,20 @@ namespace App\Repositories;
 use App\Helpers\Arr;
 use LessQL\Row;
 
-abstract class BaseRepository implements IRepository
+abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
 {
     public const array FILTER_BY = [
 
     ];
 
-    public function __construct(
-        protected string $tableName
-    )
-    {
-
-    }
-
     public function getAll(): array
     {
-        return db()->table($this->tableName)->orderBy('id')->fetchAll();
+        return db()->table(static::TABLE_NAME)->orderBy('id')->fetchAll();
     }
 
     public function getById(int $id): Row|null
     {
-        return db()->table($this->tableName, $id);
+        return db()->table(static::TABLE_NAME, $id);
     }
 
     public function save(mixed $entity): bool
@@ -38,7 +31,7 @@ abstract class BaseRepository implements IRepository
     {
         $queryValues = $this->filterQueryValues($queryValues);
 
-        $query = db()->table($this->tableName);
+        $query = db()->table(static::TABLE_NAME);
         foreach ($queryValues as $fieldName => $queryValue) {
             $query = $query->where($fieldName, $queryValue);
         }
@@ -46,20 +39,32 @@ abstract class BaseRepository implements IRepository
         return $query->fetchAll();
     }
 
-    protected function filterQueryValues($queryValues): array
+    public static function getFieldsOfFilterBy(): ?array
     {
         static $filterBy;
         static $set = false;
 
-        if (is_null(static::FILTER_BY)) {
+        if (!$set) {
+            $set = true;
+
+            if (is_null(static::FILTER_BY)) {
+                $filterBy = null;
+            } else {
+                $filterBy = Arr::wrap(static::FILTER_BY);
+            }
+        }
+
+        return $filterBy;
+    }
+
+    protected function filterQueryValues($queryValues): array
+    {
+        $filterBy = $this::getFieldsOfFilterBy();
+
+        if (is_null($filterBy)) {
             return $queryValues;
         }
 
-        if (!$set) {
-            $set = true;
-            $filterBy = array_fill_keys(Arr::wrap(static::FILTER_BY), null);
-        }
-
-        return array_intersect_key($queryValues, $filterBy);
+        return Arr::filter(array_intersect_key($queryValues, array_fill_keys($filterBy, null)), fn($value) => (bool)$value);
     }
 }
