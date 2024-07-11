@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Helpers;
 
 class Arr
@@ -66,7 +67,7 @@ class Arr
 
     public static function filterOutEmpty(mixed $array): array
     {
-        return static::filter($array, fn($value) => !empty($value));
+        return static::filter($array, fn ($value) => !empty($value));
     }
 
     public static function filter(mixed $array, \Closure|null $filter = null): array
@@ -238,7 +239,8 @@ class Arr
         return $array;
     }
 
-    protected static function _merge(mixed $array, mixed $array2): mixed {
+    protected static function _merge(mixed $array, mixed $array2): mixed
+    {
         foreach ($array2 as $key => $value) {
             if (is_array($array[$key]) && is_array($value)) {
                 $array[$key] = static::_merge($array[$key], $value);

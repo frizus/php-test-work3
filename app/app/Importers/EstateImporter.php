@@ -67,8 +67,7 @@ class EstateImporter extends AbstractImporter
 
     public function __construct(
         protected ISourceReader $sourceReader
-    )
-    {
+    ) {
 
     }
 

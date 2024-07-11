@@ -24,6 +24,6 @@ class ContactsController extends ApiController
 
     protected function getRepository(): IRepository
     {
-        return new ContactRepository;
+        return new ContactRepository();
     }
 }

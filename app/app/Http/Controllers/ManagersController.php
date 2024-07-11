@@ -24,6 +24,6 @@ class ManagersController extends ApiController
 
     protected function getRepository(): IRepository
     {
-        return new ManagerRepository;
+        return new ManagerRepository();
     }
 }

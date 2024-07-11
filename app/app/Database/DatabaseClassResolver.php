@@ -10,8 +10,7 @@ class DatabaseClassResolver
 
     public static function resolve(string $driver): string
     {
-        switch ($driver)
-        {
+        switch ($driver) {
             case 'pgsql':
                 return PostgreSqlDatabase::class;
                 break;

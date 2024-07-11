@@ -24,6 +24,6 @@ class AgenciesController extends ApiController
 
     protected function getRepository(): IRepository
     {
-        return new AgencyRepository;
+        return new AgencyRepository();
     }
 }

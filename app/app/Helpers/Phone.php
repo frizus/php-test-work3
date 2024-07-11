@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Helpers;
 
 class Phone
@@ -25,14 +26,14 @@ class Phone
             }
 
             $value = $start . ' (' . $areaCode . ') ' . $nextThree . '-' . $nextTwo . '-' . $lastTwo;
-        } else if (strlen($value) == 10) {
+        } elseif (strlen($value) == 10) {
             $areaCode = substr($value, 0, 3);
             $nextThree = substr($value, 3, 3);
             $nextTwo = substr($value, 6, 2);
             $lastTwo = substr($value, 8, 2);
 
             $value = '(' . $areaCode . ') ' . $nextThree . '-' . $nextTwo . '-' . $lastTwo;
-        } else if (strlen($value) == 7) {
+        } elseif (strlen($value) == 7) {
             $nextThree = substr($value, 0, 3);
             $nextTwo = substr(3, 2);
             $lastTwo = substr(5, 2);

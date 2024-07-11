@@ -76,12 +76,12 @@ function apiShowResource($route, $controllerClass, RouteCollector $collector): v
 
 function convertCollectionToXml($result, $fields = null): string
 {
-    return arrayToXml(prepareCollectionForXmlRender($result, $fields, fn(Row $row) => $row->getData()));
+    return arrayToXml(prepareCollectionForXmlRender($result, $fields, fn (Row $row) => $row->getData()));
 }
 
 function convertItemToXml($result, $specificColumns = null): string
 {
-    $itemData = getItemData($result, fn(Row $row) => $row->getData());
+    $itemData = getItemData($result, fn (Row $row) => $row->getData());
     $itemData = removeExtraColumns($itemData, $specificColumns);
 
     return arrayToXml($itemData);

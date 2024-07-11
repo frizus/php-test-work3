@@ -11,8 +11,7 @@ class RestShowRequest extends BaseRequest
         protected ?array $query = null,
         protected ?array $post = null,
         protected ?array $files = null
-    )
-    {
+    ) {
         parent::__construct($query, $post, $files);
     }
 

@@ -10,8 +10,7 @@ abstract class BaseRequest
         protected ?array $query = null,
         protected ?array $post = null,
         protected ?array $files = null
-    )
-    {
+    ) {
         $this->query ??= $_GET;
         $this->post ??= $_POST;
         $this->files ??= $_FILES;

@@ -24,6 +24,6 @@ class EstatesController extends ApiController
 
     protected function getRepository(): IRepository
     {
-        return new EstateRepository;
+        return new EstateRepository();
     }
 }

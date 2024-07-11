@@ -6,5 +6,4 @@ use App\Exception;
 
 class ItemNotFoundException extends Exception
 {
-
 }

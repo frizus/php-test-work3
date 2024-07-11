@@ -8,8 +8,7 @@ class ExistsInDatabase extends AbstractRule
 {
     public function __construct(
         protected string $tableName
-    )
-    {
+    ) {
 
     }
 
