@@ -10,13 +10,13 @@
             <a href="/agencies" target="_blank">/agencies</a>
         </li>
         <li>
-            <a href="/contacts" target="_blank">/contacts</a>?agency_id=&lt;id&gt;
+            <a href="/contacts" target="_blank">/contacts</a><code>?agency_id=id</code>
         </li>
         <li>
-            <a href="/managers" target="_blank">Managers</a>?agency_id=&lt;id&gt;
+            <a href="/managers" target="_blank">/managers</a><code>?agency_id=id</code>
         </li>
         <li>
-            <a href="/estates" target="_blank">Estates</a>?contact_id=&lt;id&gt;&manager_id==&lt;id&gt;&agency_id=&lt;id&gt;
+            <a href="/estates" target="_blank">/estates</a><code>?contact_id=id&manager_id=id&agency_id=id</code>
         </li>
     </ul>
     </body>
