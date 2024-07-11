@@ -11,3 +11,13 @@ import-estate:
 
 import-estate-update:
 	./console app:import-estate -v estate_update.xlsx
+
+linter:
+	./vendor/bin/php-cs-fixer fix .
+
+test:
+	echo "Тесты не написаны"
+
+lint: linter
+
+.PHONY: test
