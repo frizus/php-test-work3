@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\Resource;
 use App\Http\Requests\EstateIndexRequest;
+use App\Http\Requests\RestShowRequest;
 use App\Repositories\EstateRepository;
+use App\Repositories\IRepository;
 
 class EstatesController
 {
@@ -12,7 +14,7 @@ class EstatesController
 
     public function index()
     {
-        return $this->listData(new EstateIndexRequest(), new EstateRepository());
+        return $this->listData(new EstateIndexRequest(), $this->getRepository());
     }
 
     public function create()
@@ -22,7 +24,8 @@ class EstatesController
 
     public function show($id)
     {
-
+        $repository = $this->getRepository();
+        return $this->itemData(new RestShowRequest($repository->getTableName(), ['id' => $id]), $repository);
     }
 
     public function update($id)
@@ -33,5 +36,10 @@ class EstatesController
     public function delete($id)
     {
 
+    }
+
+    protected function getRepository(): IRepository
+    {
+        return new EstateRepository;
     }
 }

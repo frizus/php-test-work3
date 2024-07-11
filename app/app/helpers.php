@@ -4,6 +4,7 @@ use App\Config;
 use App\Database\AbstractDatabase;
 use App\Database\DatabaseManager;
 use App\Database\ILessQL;
+use App\Helpers\Arr;
 use LessQL\Database;
 use LessQL\Row;
 use Phroute\Phroute\RouteCollector;
@@ -82,39 +83,69 @@ function convertCollectionToXml($result, $fields = null): string
     return arrayToXml(prepareCollectionForXmlRender($result, $fields, fn(Row $row) => $row->getData()));
 }
 
+function convertItemToXml($result, $specificColumns = null)
+{
+    $itemData = getItemData($result, fn(Row $row) => $row->getData());
+    $itemData = removeExtraColumns($itemData, $specificColumns);
+
+    return arrayToXml($itemData);
+}
+
 function prepareCollectionForXmlRender($result, $specificColumns = null, ?\Closure $getItemFieldsClosure = null): array
 {
-    $array = ['item' => []];
-
-    $needSpecificColumns = is_array($specificColumns) && !empty($specificColumns);
-    if ($needSpecificColumns) {
-        $specificColumns = array_fill_keys($specificColumns, null);
-    }
+    $array = [];
 
     foreach ($result as $item) {
-        if (is_callable($getItemFieldsClosure)) {
-            $itemData = $getItemFieldsClosure($item);
-        } else {
-            $itemData = $item;
-        }
-
-        if ($needSpecificColumns) {
-            $itemData = array_intersect_key($itemData, $specificColumns);
-        }
+        $itemData = getItemData($item, $getItemFieldsClosure);
+        $itemData = removeExtraColumns($itemData, $specificColumns);
         $array['item'][] = $itemData;
     }
 
     return $array;
 }
 
-function validationError(ValidationException $e)
+function removeExtraColumns(mixed $itemData, ?array $specificColumns): mixed
+{
+    if (!is_array($itemData)) {
+        return $itemData;
+    }
+
+    $needSpecificColumns = is_array($specificColumns) && !empty($specificColumns);
+    if ($needSpecificColumns) {
+        $specificColumns = array_fill_keys($specificColumns, null);
+    }
+
+    if ($needSpecificColumns) {
+        $itemData = array_intersect_key($itemData, $specificColumns);
+    }
+
+    return $itemData;
+}
+
+function getItemData(mixed $item, ?\Closure $getItemFieldsClosure): mixed
+{
+    if (is_callable($getItemFieldsClosure)) {
+        $itemData = $getItemFieldsClosure($item);
+    } else {
+        $itemData = $item;
+    }
+
+    return $itemData;
+}
+
+function validationErrorToXml(ValidationException $e)
 {
     $result = [];
     foreach ($e->getMessages() as $message) {
         $result[] = (string)$message;
     }
 
-    return arrayToXml(['errors' => prepareCollectionForXmlRender($result)]);
+    return errorToXml($result);
+}
+
+function errorToXml($result): string
+{
+    return arrayToXml(['errors' => prepareCollectionForXmlRender(Arr::wrap($result))]);
 }
 
 /**
