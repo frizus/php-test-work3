@@ -13,7 +13,7 @@ class AgencyIndexRequest extends RestIndexRequest
         return AgencyRepository::getFieldsOfFilterBy();
     }
 
-    public function callValidator(): void
+    protected function callValidator(): void
     {
 
     }

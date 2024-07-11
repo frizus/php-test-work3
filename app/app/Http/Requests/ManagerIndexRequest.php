@@ -16,9 +16,9 @@ class ManagerIndexRequest extends RestIndexRequest
         return ManagerRepository::getFieldsOfFilterBy();
     }
 
-    public function callValidator(): void
+    protected function callValidator(): void
     {
-        Validator::key('agency_id', Validator::nullable(Validator::intVal()->positive()->existsInDatabase('agency')), false)
+        Validator::key('agency_id', Validator::intVal()->positive()->existsInDatabase('agency'), false)
             ->assert($this->data);
     }
 }

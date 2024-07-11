@@ -17,11 +17,11 @@ class EstateIndexRequest extends RestIndexRequest
         return EstateRepository::getFieldsOfFilterBy();
     }
 
-    public function callValidator(): void
+    protected function callValidator(): void
     {
-        Validator::key('agency_id', Validator::nullable(Validator::intVal()->positive()->existsInDatabase('agency')), false)
-            ->key('contact_id', Validator::nullable(Validator::intVal()->positive()->existsInDatabase('contacts')), false)
-            ->key('manager_id', Validator::nullable(Validator::intVal()->positive()->existsInDatabase('manager')), false)
+        Validator::key('agency_id', Validator::intVal()->positive()->existsInDatabase('agency'), false)
+            ->key('contact_id', Validator::intVal()->positive()->existsInDatabase('contacts'), false)
+            ->key('manager_id', Validator::intVal()->positive()->existsInDatabase('manager'), false)
             ->assert($this->data);
     }
 }

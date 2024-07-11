@@ -4,25 +4,25 @@ namespace App\Http\Requests;
 
 abstract class BaseRequest
 {
-    protected array $data;
+    protected array $data = [];
 
     public function __construct(
         protected ?array $query = null,
         protected ?array $post = null,
-        protected ?array $files = null,
-        $validate = true,
+        protected ?array $files = null
     )
     {
         $this->query ??= $_GET;
         $this->post ??= $_POST;
         $this->files ??= $_FILES;
-        if ($validate) {
-            $this->validate();
-        }
     }
 
-    public function input()
+    public function input($key = null, $default = null)
     {
+        if (func_num_args() > 0) {
+            return key_exists($key, $this->data) ? $this->data[$key] : $default;
+        }
+
         return $this->data;
     }
 
@@ -37,7 +37,7 @@ abstract class BaseRequest
         $this->callValidator();
     }
 
-    public function callValidator(): void
+    protected function callValidator(): void
     {
 
     }
