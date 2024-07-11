@@ -51,7 +51,7 @@ class EstateImporter extends AbstractImporter
         ]
     ];
 
-    protected array $touched;
+    protected ?array $touched;
 
     protected ?array $row;
 
@@ -85,6 +85,13 @@ class EstateImporter extends AbstractImporter
                 }
             }
         }
+        // TODO проверка флага и удаление строк, отсутствующих в читаемом файле?
+
+        $this->sourceReader->close();
+        $this->importingTable = null;
+        $this->rowHelper = null;
+        $this->row = null;
+        $this->touched = null;
     }
 
     protected function statsKeys(): array
@@ -92,7 +99,7 @@ class EstateImporter extends AbstractImporter
         $statsKeys = [];
 
         foreach (['agency', 'manager', 'contacts', 'estate'] as $tableName) {
-            foreach (['same', 'updated', 'created'] as $action) {
+            foreach (['unchanged', 'updated', 'created'] as $action) {
                 $statsKeys[] = $action . '_' . $tableName;
             }
         }
@@ -177,7 +184,7 @@ class EstateImporter extends AbstractImporter
 
                 if ($existingEntity->isClean()) {
                     if ($this->entityNotTouched()) {
-                        $this->incrStat('same_' . $this->importingTable);
+                        $this->incrStat('unchanged_' . $this->importingTable);
                         $this->touchedEntity($existingEntity);
                     }
                 } else {
@@ -186,7 +193,7 @@ class EstateImporter extends AbstractImporter
                     $this->touchedEntity($existingEntity);
                 }
             } elseif ($this->entityNotTouched()) {
-                $this->incrStat('same_' . $this->importingTable);
+                $this->incrStat('unchanged_' . $this->importingTable);
                 $this->touchedEntity($existingEntity);
             }
         } else {

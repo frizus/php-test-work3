@@ -13,7 +13,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class PhpSpreadSheetSourceReader extends AbstractSourceReader implements ISourceReader, ICanUseFilePathSourceReader
 {
-    protected Spreadsheet $spreadsheet;
+    protected ?Spreadsheet $spreadsheet;
 
     protected array $columns;
 
@@ -52,6 +52,11 @@ class PhpSpreadSheetSourceReader extends AbstractSourceReader implements ISource
         }
         $this->readColumnNames();
         $this->prepareForChunkReading();
+    }
+
+    public function close(): void
+    {
+        $this->spreadsheet = null;
     }
 
     public function prepareForChunkReading(): void

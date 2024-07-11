@@ -4,7 +4,7 @@ namespace App\Importers\SourceReaders;
 
 class AbstractSourceReader
 {
-    protected int $chunk = 10;
+    protected int $chunk = 100;
 
     protected string $fileType;
 
