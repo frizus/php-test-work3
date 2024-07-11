@@ -1,15 +1,13 @@
 install-libs:
 	composer install
 
-setup: install-libs
+setup: install-libs db
 
 db:
 	./console app:db
 
-import:
-	./console app:import-estate
+import-estate:
+	./console app:import-estate -v
 
-update-import:
-	./console app:import-estate estate_update.xlsx
-
-import-update: update-import
+import-estate-update:
+	./console app:import-estate -v estate_update.xlsx

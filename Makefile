@@ -39,6 +39,19 @@ build-db:
 rebuild-db:
 	docker-compose build --no-cache db
 
+import-estate:
+	docker-compose run --rm php bash -i -c "\
+	make import-estate\
+	"
+
+import-estate-update:
+	docker-compose run --rm php bash -i -c "\
+	make import-estate-update\
+	"
+
+connect-php:
+	docker-compose exec -it php bash
+
 start: run
 
 launch: run
