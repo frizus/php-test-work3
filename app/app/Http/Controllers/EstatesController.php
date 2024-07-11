@@ -8,34 +8,18 @@ use App\Http\Requests\RestShowRequest;
 use App\Repositories\EstateRepository;
 use App\Repositories\IRepository;
 
-class EstatesController
+class EstatesController extends ApiController
 {
     use Resource;
 
     public function index()
     {
-        return $this->listData(new EstateIndexRequest(), $this->getRepository());
+        return $this->listData(new EstateIndexRequest(), $this->repository);
     }
 
-    public function create()
+    public function show($id): string
     {
-
-    }
-
-    public function show($id)
-    {
-        $repository = $this->getRepository();
-        return $this->itemData(new RestShowRequest($repository->getTableName(), ['id' => $id]), $repository);
-    }
-
-    public function update($id)
-    {
-
-    }
-
-    public function delete($id)
-    {
-
+        return $this->itemData(new RestShowRequest($this->repository->getTableName(), ['id' => $id]), $this->repository);
     }
 
     protected function getRepository(): IRepository

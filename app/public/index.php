@@ -21,10 +21,10 @@ Factory::setDefaultInstance(
 $collector = new RouteCollector();
 
 $collector->get('/', [HomeController::class, 'home']);
-apiResource('/agencies', AgenciesController::class, $collector);
-apiResource('/contacts', ContactsController::class, $collector);
-apiResource('/managers', ManagersController::class, $collector);
-apiResource('/estates', EstatesController::class, $collector);
+apiShowResource('/agencies', AgenciesController::class, $collector);
+apiShowResource('/contacts', ContactsController::class, $collector);
+apiShowResource('/managers', ManagersController::class, $collector);
+apiShowResource('/estates', EstatesController::class, $collector);
 
 try {
     echo (new Dispatcher($collector->getData()))->dispatch($_SERVER['REQUEST_METHOD'], strtok($_SERVER['REQUEST_URI'], '?'));

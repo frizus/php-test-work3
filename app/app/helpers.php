@@ -65,17 +65,13 @@ function resolve_value($value): mixed
     return $value;
 }
 
-function apiResource($route, $controllerClass, RouteCollector $collector): void
+function apiShowResource($route, $controllerClass, RouteCollector $collector): void
 {
     $idPart = '/{id:\d+}';
     $indexPart = '/index';
     $collector->get($route, [$controllerClass, 'index']);
     $collector->get($route . $indexPart, [$controllerClass, 'index']);
-    $collector->post($route, [$controllerClass, 'create']);
-    $collector->post($route . $indexPart, [$controllerClass, 'create']);
     $collector->get($route . $idPart, [$controllerClass, 'show']);
-    $collector->put($route . $idPart, [$controllerClass, 'update']);
-    $collector->delete($route . $idPart, [$controllerClass, 'delete']);
 }
 
 function convertCollectionToXml($result, $fields = null): string
@@ -83,7 +79,7 @@ function convertCollectionToXml($result, $fields = null): string
     return arrayToXml(prepareCollectionForXmlRender($result, $fields, fn(Row $row) => $row->getData()));
 }
 
-function convertItemToXml($result, $specificColumns = null)
+function convertItemToXml($result, $specificColumns = null): string
 {
     $itemData = getItemData($result, fn(Row $row) => $row->getData());
     $itemData = removeExtraColumns($itemData, $specificColumns);
@@ -133,7 +129,7 @@ function getItemData(mixed $item, ?\Closure $getItemFieldsClosure): mixed
     return $itemData;
 }
 
-function validationErrorToXml(ValidationException $e)
+function validationErrorToXml(ValidationException $e): string
 {
     $result = [];
     foreach ($e->getMessages() as $message) {
