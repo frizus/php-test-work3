@@ -33,20 +33,26 @@ class CreateDatabaseCommand extends Command
         $filePath = root_path() . '/' . $input->getArgument('filepath');
 
         if (!file_exists($filePath)) {
-            $output->writeln('<error>Файл "' . $filePath . '" не найден</error>');
+            if ($output->isVerbose()) {
+                $output->writeln('<error>Файл "' . $filePath . '" не найден</error>');
+            }
             return Command::FAILURE;
         }
 
         $sql = file_get_contents($filePath);
 
         if (!$sql) {
-            $output->writeln('<error>Пустой SQL-файл "' . $filePath . '"</error>');
+            if ($output->isVerbose()) {
+                $output->writeln('<error>Пустой SQL-файл "' . $filePath . '"</error>');
+            }
             return Command::FAILURE;
         }
 
         db_connection()->getPdo()->exec($sql);
 
-        $output->writeln('<info>Файл "' . $filePath . '" успешно импортирован</info>');
+        if ($output->isVerbose()) {
+            $output->writeln('<info>Файл "' . $filePath . '" успешно импортирован</info>');
+        }
         return Command::SUCCESS;
     }
 }

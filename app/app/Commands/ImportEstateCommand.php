@@ -38,8 +38,10 @@ class ImportEstateCommand extends Command
         );
         $importer->run();
 
-        foreach ($importer->getImportStats() as $name => $value) {
-            $output->writeln($name . ': ' . $value);
+        if ($output->isVerbose()) {
+            foreach ($importer->getImportStats() as $name => $value) {
+                $output->writeln($name . ': ' . $value);
+            }
         }
 
         return Command::SUCCESS;
