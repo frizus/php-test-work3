@@ -72,7 +72,7 @@ function apiResource($route, $controllerClass, RouteCollector $collector): void
     $collector->get($route . $indexPart, [$controllerClass, 'index']);
     $collector->post($route, [$controllerClass, 'create']);
     $collector->post($route . $indexPart, [$controllerClass, 'create']);
-    $collector->get($route . $idPart, [$controllerClass, 'get']);
+    $collector->get($route . $idPart, [$controllerClass, 'show']);
     $collector->put($route . $idPart, [$controllerClass, 'update']);
     $collector->delete($route . $idPart, [$controllerClass, 'delete']);
 }

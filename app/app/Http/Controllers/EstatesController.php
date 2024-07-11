@@ -20,7 +20,7 @@ class EstatesController
 
     }
 
-    public function get($id)
+    public function show($id)
     {
 
     }

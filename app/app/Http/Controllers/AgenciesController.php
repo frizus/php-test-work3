@@ -22,7 +22,7 @@ class AgenciesController
 
     }
 
-    public function get($id): string
+    public function show($id): string
     {
         $row = db()->table(static::TABLE_NAME, $id);
         return arrayToXml($row->getData());

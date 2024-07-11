@@ -22,7 +22,7 @@ class ManagersController
 
     }
 
-    public function get($id)
+    public function show($id)
     {
 
     }
