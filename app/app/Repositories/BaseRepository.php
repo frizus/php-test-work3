@@ -11,6 +11,8 @@ abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
 
     ];
 
+    public const string TABLE_NAME = '';
+
     public function getAll(): array
     {
         return db()->table(static::TABLE_NAME)->orderBy('id')->fetchAll();
@@ -19,6 +21,15 @@ abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
     public function getById(int $id): Row|null
     {
         return db()->table(static::TABLE_NAME, $id);
+    }
+
+    public function getByIdOrFail(int $id): Row
+    {
+        if (!($entity = $this->getById($id))) {
+            throw new ItemNotFoundException("Не найдена строка из таблицы " . static::TABLE_NAME);
+        }
+
+        return $entity;
     }
 
     public function save(mixed $entity): bool
@@ -66,5 +77,10 @@ abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
         }
 
         return Arr::filter(array_intersect_key($queryValues, array_fill_keys($filterBy, null)), fn($value) => (bool)$value);
+    }
+
+    public function getTableName(): string
+    {
+        return static::TABLE_NAME;
     }
 }

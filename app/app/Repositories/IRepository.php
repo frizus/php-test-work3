@@ -10,6 +10,8 @@ interface IRepository
 
     public function getById(int $id): Row|null;
 
+    public function getByIdOrFail(int $id): Row;
+
     public function save(mixed $entity): bool;
 
     public function filterBy(array $queryValues = []): array;
