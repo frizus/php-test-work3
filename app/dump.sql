@@ -24,6 +24,7 @@ CREATE TABLE contacts (
   id bigint check (id > 0) NOT NULL GENERATED ALWAYS AS IDENTITY,
   name varchar(255) NOT NULL,
   phones varchar(255) NOT NULL,
+  agency_id bigint check (agency_id > 0) NOT NULL,
   PRIMARY KEY (id)
 ) ;
 /* SQLINES DEMO *** er_set_client = @saved_cs_client */;
@@ -42,6 +43,7 @@ CREATE TABLE estate (
   description text NOT NULL,
   contact_id bigint check (contact_id > 0) NOT NULL,
   manager_id bigint check (manager_id > 0) NOT NULL,
+  agency_id bigint check (agency_id > 0) NOT NULL,
   PRIMARY KEY (id)
 ,
   CONSTRAINT estate_contact_id_foreign FOREIGN KEY (contact_id) REFERENCES contacts (id)/*,
@@ -67,4 +69,6 @@ CREATE TABLE manager (
 CREATE INDEX manager_agency_id_foreign ON manager (agency_id);
 
 ALTER TABLE estate ADD CONSTRAINT estate_manager_id_foreign FOREIGN KEY (manager_id) REFERENCES manager (id);
+ALTER TABLE estate ADD CONSTRAINT estate_agency_id_foreign FOREIGN KEY (agency_id) REFERENCES agency (id);
+ALTER TABLE contacts ADD CONSTRAINT contacts_agency_id_foreign FOREIGN KEY (agency_id) REFERENCES manager (id);
 /* SQLINES DEMO *** er_set_client = @saved_cs_client */;
