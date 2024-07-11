@@ -2,11 +2,14 @@
 
 namespace App\Controllers;
 
+use Respect\Validation\Exceptions\ValidationException;
+use Respect\Validation\Validator;
+
 class AgenciesController
 {
     protected const string TABLE_NAME = 'agency';
 
-    public function index()
+    public function index(): string
     {
         return allDataToXml(static::TABLE_NAME);
     }
@@ -16,17 +19,24 @@ class AgenciesController
 
     }
 
-    public function get(int $id)
+    public function get($id): string
+    {
+        try {
+            Validator::intVal()->positive()->assert($id);
+        } catch (ValidationException $e) {
+            return validationError($e);
+        }
+
+        $row = db()->table(static::TABLE_NAME, $id);
+        return arrayToXml($row->getData());
+    }
+
+    public function update($id)
     {
 
     }
 
-    public function update(int $id)
-    {
-
-    }
-
-    public function delete(int $id)
+    public function delete($id)
     {
 
     }

@@ -14,17 +14,17 @@ class EstatesController
 
     }
 
-    public function get(int $id)
+    public function get($id)
     {
 
     }
 
-    public function update(int $id)
+    public function update($id)
     {
 
     }
 
-    public function delete(int $id)
+    public function delete($id)
     {
 
     }

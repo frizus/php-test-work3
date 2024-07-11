@@ -5,7 +5,9 @@ use App\Database\AbstractDatabase;
 use App\Database\DatabaseManager;
 use App\Database\ILessQL;
 use LessQL\Database;
+use LessQL\Row;
 use Phroute\Phroute\RouteCollector;
+use Respect\Validation\Exceptions\ValidationException;
 use Spatie\ArrayToXml\ArrayToXml;
 
 function db_connection(?string $connectionName = null): AbstractDatabase
@@ -75,13 +77,16 @@ function apiResource($route, $controllerClass, RouteCollector $collector): void
     $collector->delete($route . $idPart, [$controllerClass, 'delete']);
 }
 
+/**
+ * @throws DOMException
+ */
 function allDataToXml($tableName, $fields = null): string
 {
     $result = db()->table($tableName)->fetchAll();
-    return \arrayToXml(prepareCollectionForXmlRender($result, $fields));
+    return arrayToXml(prepareCollectionForXmlRender($result, $fields, fn(Row $row) => $row->getData()));
 }
 
-function prepareCollectionForXmlRender($result, $specificColumns = null): array
+function prepareCollectionForXmlRender($result, $specificColumns = null, ?\Closure $getItemFieldsClosure = null): array
 {
     $array = ['item' => []];
 
@@ -91,7 +96,12 @@ function prepareCollectionForXmlRender($result, $specificColumns = null): array
     }
 
     foreach ($result as $item) {
-        $itemData = $item->getData();
+        if (is_callable($getItemFieldsClosure)) {
+            $itemData = $getItemFieldsClosure($item);
+        } else {
+            $itemData = $item;
+        }
+
         if ($needSpecificColumns) {
             $itemData = array_intersect_key($itemData, $specificColumns);
         }
@@ -99,6 +109,18 @@ function prepareCollectionForXmlRender($result, $specificColumns = null): array
     }
 
     return $array;
+}
+
+function validationError(ValidationException $e)
+{
+    http_response_code(400);
+
+    $result = [];
+    foreach ($e->getMessages() as $message) {
+        $result[] = (string)$message;
+    }
+
+    return arrayToXml(['errors' => prepareCollectionForXmlRender($result)]);
 }
 
 /**
