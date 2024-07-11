@@ -7,8 +7,6 @@ use Symfony\Component\Console\Application;
 
 require __DIR__.'/vendor/autoload.php';
 
-$_SERVER['DOCUMENT_ROOT'] = __DIR__;
-
 $application = new Application();
 $application->add(new CreateDatabaseCommand());
 $application->add(new ImportEstateCommand());
