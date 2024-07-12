@@ -9,8 +9,6 @@ REST для просмотра данных с фильтрацией
 
 Используется [phpenv](https://github.com/phpenv/phpenv)
 
-TODO переделать на [Clean-Spring](https://plugins.jetbrains.com/plugin/23431-architecture-generator) архитектуру (наиболее подходящая)
-
 ## Системные требования
 
 * Docker >= 26.1.4
