@@ -77,9 +77,10 @@ services:
       - ./log/nginx:/var/log/nginx
       - ./log/php:/var/log/php
     # https://www.baeldung.com/ops/docker-compose-multiple-commands#1-using-the-ampamp-operator
+    # TODO одноразовый запуск правки прав для проекта
     command: /bin/bash -c "
       chgrp -R ${SITE_EDITOR_GID} ${PROJECT_ROOT};
-      find /var/log/nginx -type d -exec chmod 2775 ${PROJECT_ROOT} -- {} +;
+      find ${PROJECT_ROOT} -type d -exec chmod 2775 ${PROJECT_ROOT} -- {} +;
       chgrp ${SITE_EDITOR_GID} /var/log/nginx;
       find /var/log/nginx -type d -exec chmod g+rwx -- {} +;
       find /var/log/nginx -type f -exec chmod g+rw -- {} +;
