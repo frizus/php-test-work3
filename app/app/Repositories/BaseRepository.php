@@ -49,6 +49,7 @@ abstract class BaseRepository implements IRepository, IFieldsOfFilterBy
         foreach ($queryValues as $fieldName => $queryValue) {
             $query = $query->where($fieldName, $queryValue);
         }
+        $query->orderBy('id');
 
         return $query->fetchAll();
     }
